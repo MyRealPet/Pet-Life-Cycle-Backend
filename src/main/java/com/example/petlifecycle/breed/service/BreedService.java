@@ -1,6 +1,8 @@
 package com.example.petlifecycle.breed.service;
 
+import com.example.petlifecycle.breed.controller.request.ListBreedRequest;
 import com.example.petlifecycle.breed.controller.request.RegisterBreedRequest;
+import com.example.petlifecycle.breed.controller.response.ListBreedResponse;
 import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 
 public interface BreedService {
