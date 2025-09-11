@@ -61,6 +61,21 @@ public class FileService {
 
     }
 
+    public void deleteFile(Long fileId) {
+        MetaDataFile metaDataFile = metaDataFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        try {
+            s3Service.deleteFile(metaDataFile.getS3Key());
+
+            metaDataFile.setDeletedAt(LocalDateTime.now());
+            metaDataFileRepository.save(metaDataFile);
+        } catch (Exception e) {
+            log.error("파일 삭제 실패: {}" ,e.getMessage());
+            throw new IllegalArgumentException("파일 삭제에 실패했습니다.");
+        }
+    }
+
     private void validateFile(MultipartFile file, FileType fileType) {
         if(file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어있습니다.");

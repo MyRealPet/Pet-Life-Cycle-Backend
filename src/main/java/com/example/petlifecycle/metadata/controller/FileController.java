@@ -50,4 +50,18 @@ public class FileController {
                             .build());
         }
     }
+    // 다운
+    // 조회
+
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<String> deleteFile(@PathVariable Long fileId) {
+        try {
+            fileService.deleteFile(fileId);
+            return ResponseEntity.ok("파일이 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("파일 삭제 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body("파일 삭제에 실패했습니다.");
+        }
+    }
 }
