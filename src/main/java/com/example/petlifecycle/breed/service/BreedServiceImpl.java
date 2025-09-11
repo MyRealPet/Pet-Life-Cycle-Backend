@@ -3,6 +3,7 @@ package com.example.petlifecycle.breed.service;
 import com.example.petlifecycle.breed.controller.request.ListBreedRequest;
 import com.example.petlifecycle.breed.controller.request.RegisterBreedRequest;
 import com.example.petlifecycle.breed.controller.response.ListBreedResponse;
+import com.example.petlifecycle.breed.controller.response.ReadBreedResponse;
 import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 import com.example.petlifecycle.breed.entity.Breed;
 import com.example.petlifecycle.breed.repository.BreedRepository;
@@ -44,5 +45,11 @@ public class BreedServiceImpl implements BreedService {
         );
     }
 
+    @Override
+    public ReadBreedResponse readBreed(Long breedId) {
+        Breed foundBreed = breedRepository.findByIdAndIsDeletedFalse(breedId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 Breed입니다. ID: " + breedId));
+        return ReadBreedResponse.from(foundBreed);
+    }
 }
 
