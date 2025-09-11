@@ -64,5 +64,14 @@ public class BreedServiceImpl implements BreedService {
 
         return UpdateBreedResponse.from(updatedBreed);
     }
+
+    @Override
+    public void deleteBreed(Long breedId) {
+        Breed foundBreed = breedRepository.findByIdAndIsDeletedFalse(breedId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 Breed입니다. ID: " + breedId));
+        foundBreed.delete();
+
+        Breed deletedBreed = breedRepository.save(foundBreed);
+    }
 }
 

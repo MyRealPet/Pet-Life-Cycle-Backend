@@ -67,4 +67,14 @@ public class BreedController {
         }
     }
 
+    @DeleteMapping("/{breedId}")
+    public ResponseEntity<String> delete(@PathVariable Long breedId) {
+        try {
+            breedService.deleteBreed(breedId);
+            return ResponseEntity.ok("파일 삭제에 성공했습니다.");
+        } catch (Exception e) {
+            log.error("품종 삭제 실패 (ID: {}): {}", breedId, e.getMessage(), e);
+            throw new RuntimeException("파일 삭제에 실패했습니다.");
+        }
+    }
 }
