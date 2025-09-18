@@ -16,7 +16,6 @@ public class FileUploadRequest {
     private MultipartFile file;
     private FileType fileType;
     private AccessType accessType;
-//    private Long uploadId;
     private String relatedEntityType;
     private Long relatedEntityId;
 
@@ -28,17 +27,4 @@ public class FileUploadRequest {
         this.relatedEntityId = relatedEntityId;
     }
 
-    public MetaDataFile toMetaDataFile(String storedFileName, String s3Key) {
-        return new MetaDataFile(
-                file.getOriginalFilename(),
-                storedFileName,
-                s3Key,
-                file.getContentType(),
-                file.getSize(),
-                fileType,
-                accessType,
-                relatedEntityType,
-                relatedEntityId
-        );
-    }
 }

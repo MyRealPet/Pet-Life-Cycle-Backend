@@ -7,6 +7,7 @@ import com.example.petlifecycle.metadata.entity.MetaDataFile;
 import com.example.petlifecycle.metadata.repository.MetaDataFileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class FileService {
     private final S3Service s3Service;
     private final MetaDataFileRepository metaDataFileRepository;
 
-    public MetaDataFile uploadFile(MultipartFile file, FileType fileType,
+    public MetaDataFile uploadFile(MultipartFile file, FileType fileType, Long accountId,
                                    AccessType accessType, String relatedEntityType, Long relatedEntityId) {
 
         // 파일 유효성 검증
@@ -41,17 +43,18 @@ public class FileService {
             String fileUrl = s3Service.uploadFile(file, s3Key);
 
             // 메타데이터 저장
-            MetaDataFile metaDataFile = MetaDataFile.builder()
-                    .originalFileName(file.getOriginalFilename())
-                    .storedFileName(storedFileName)
-                    .s3Key(s3Key)
-                    .contentType(file.getContentType())
-                    .fileSize(file.getSize())
-                    .fileType(fileType)
-                    .accessType(accessType)
-                    .relatedEntityType(relatedEntityType)
-                    .relatedEntityId(relatedEntityId)
-                    .build();
+            MetaDataFile metaDataFile = new MetaDataFile(
+                    accountId,
+                    file.getOriginalFilename(),
+                    storedFileName,
+                    s3Key,
+                    file.getContentType(),
+                    file.getSize(),
+                    fileType,
+                    accessType,
+                    relatedEntityType,
+                    relatedEntityId
+            );
 
             return metaDataFileRepository.save(metaDataFile);
         } catch (Exception e) {
@@ -61,6 +64,22 @@ public class FileService {
 
     }
 
+    public MetaDataFile getFileById(Long fileId) {
+        return metaDataFileRepository.findById(fileId)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+    }
+
+    public String getFileUrl(String s3Key) {
+        MetaDataFile file = metaDataFileRepository.findByS3Key(s3Key)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        if (file.getAccessType() == AccessType.PRIVATE) {
+            return s3Service.generatePresignedUrl(s3Key, 60);
+        } else {
+            return s3Service.getPublicUrl(s3Key);
+        }
+    }
+
     public void deleteFile(Long fileId) {
         MetaDataFile metaDataFile = metaDataFileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
@@ -68,13 +87,85 @@ public class FileService {
         try {
             s3Service.deleteFile(metaDataFile.getS3Key());
 
-            metaDataFile.setDeletedAt(LocalDateTime.now());
+            metaDataFile.delete();
             metaDataFileRepository.save(metaDataFile);
         } catch (Exception e) {
             log.error("파일 삭제 실패: {}" ,e.getMessage());
             throw new IllegalArgumentException("파일 삭제에 실패했습니다.");
         }
     }
+    // s3, metadata soft delete
+    public void softDeleteFile(Long fileId) {
+        MetaDataFile metaDataFile = metaDataFileRepository.findById(fileId)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        metaDataFile.delete();
+        metaDataFileRepository.save(metaDataFile);
+        log.info("파일 소프트 삭제 완료: {}" ,fileId);
+    }
+
+    // s3 hard delete, metadata soft delete
+    public void hardDeleteFile(Long fileId) {
+        MetaDataFile metaDataFile = metaDataFileRepository.findById(fileId)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        try {
+            s3Service.deleteFile(metaDataFile.getS3Key());
+            metaDataFile.s3Delete();
+
+            metaDataFile.delete();
+            metaDataFileRepository.save(metaDataFile);
+            log.info("파일 하드 삭제 완료: {}" ,fileId);
+        } catch (Exception e) {
+            log.error("파일 하드 삭제 실패: {}" ,e.getMessage());
+            throw new RuntimeException("파일 삭제에 실패했습니다.");
+        }
+    }
+
+    public void restoreFile(Long fileId) {
+        MetaDataFile metaDataFile = metaDataFileRepository.findById(fileId)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        if (metaDataFile.getS3Deleted()) {
+            throw new IllegalArgumentException("S3에서 삭제된 파일을 복구할 수 없습니다.");
+        }
+
+        metaDataFile.restore();
+        metaDataFileRepository.save(metaDataFile);
+
+        log.info("파일 복구 완료: {}" ,fileId);
+    }
+
+    // soft delete 상태 30일 경과 후, s3 hard delete
+    @Scheduled(cron = "0 0 3 * * *")
+    public void cleanupS3File() {
+        LocalDateTime cutOfDate = LocalDateTime.now().minusDays(30);
+
+        List<MetaDataFile> filesToClean = metaDataFileRepository
+                .findByIsDeletedTrueAndS3DeletedFalseAndDeletedAtBefore(cutOfDate);
+
+        log.info("S3 삭제 파일: {} 개", filesToClean.size());
+
+        int successCount = 0;
+        int failedCount = 0;
+        for (MetaDataFile file : filesToClean) {
+            try {
+                s3Service.deleteFile(file.getS3Key());
+                file.delete();
+                metaDataFileRepository.save(file);
+
+                successCount++;
+                log.debug("S3 파일 정리 완료: fileId={}, s3Key={}", file.getId(), file.getS3Key());
+            } catch (Exception e) {
+                failedCount++;
+                log.debug("S3 파일 정리 실패: fileId={}, s3Key={}", file.getId(), file.getS3Key());
+            }
+        }
+
+        log.info("S3 정리 완료: 성공={}, 실패={}", successCount, failedCount);
+
+    }
+
 
     private void validateFile(MultipartFile file, FileType fileType) {
         if(file.isEmpty()) {

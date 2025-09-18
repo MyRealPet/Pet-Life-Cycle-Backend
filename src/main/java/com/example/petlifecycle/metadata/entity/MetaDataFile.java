@@ -11,7 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-//@Table(name = "metadata_files")
 @Getter
 @Builder
 @NoArgsConstructor
@@ -20,6 +19,9 @@ public class MetaDataFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private Long accountId;
 
     @Column(nullable = false, length = 100)
     private String originalFileName;
@@ -42,8 +44,6 @@ public class MetaDataFile {
     @Column(nullable = false, length = 30)
     private AccessType accessType;
 
-//    @Column(nullable = false)
-//    private Long uploaderId;
     @Column(length = 50)
     private String relatedEntityType;
     private Long relatedEntityId;
@@ -54,7 +54,13 @@ public class MetaDataFile {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public MetaDataFile(String originalFileName, String storedFileName, String s3Key, String contentType, Long fileSize, FileType fileType, AccessType accessType, String relatedEntityType, Long relatedEntityId) {
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+    @Column(name = "s3_deleted", nullable = false)
+    private Boolean s3Deleted = false;
+
+    public MetaDataFile(Long accountId, String originalFileName, String storedFileName, String s3Key, String contentType, Long fileSize, FileType fileType, AccessType accessType, String relatedEntityType, Long relatedEntityId) {
+        this.accountId = accountId;
         this.originalFileName = originalFileName;
         this.storedFileName = storedFileName;
         this.s3Key = s3Key;
@@ -66,7 +72,21 @@ public class MetaDataFile {
         this.relatedEntityId = relatedEntityId;
     }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+        this.isDeleted = true;
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+        this.isDeleted = false;
+    }
+
+    public void s3Delete() {
+        this.s3Deleted = true;
+    }
+
+    public boolean isAvailable() {
+        return !isDeleted && !s3Deleted;
     }
 }

@@ -20,21 +20,20 @@ public class RegisterPetAccountRequest {
     private String gender;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
-    private Double weight;
     private Boolean isNeutered;
     private Boolean hasMicrochip;
     private MultipartFile profileImg;
     private MultipartFile registerPdf;
 
-    public PetAccount toPetAccount(Breed mainBreed, Breed subBreed) {
+    public PetAccount toPetAccount(Long accountId, Breed mainBreed, Breed subBreed) {
 
         return new PetAccount(
+                accountId,
                 name,
                 mainBreed,
                 subBreed,
                 gender,
                 birthday,
-                weight,
                 isNeutered,
                 hasMicrochip
         );

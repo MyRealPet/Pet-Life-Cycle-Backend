@@ -1,12 +1,12 @@
 package com.example.petlifecycle.pet.controller.response;
 
 import com.example.petlifecycle.breed.entity.Breed;
-import com.example.petlifecycle.metadata.entity.MetaDataFile;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Getter
 @Builder
 @AllArgsConstructor
-public class RegisterPetAccountResponse implements FileUrlSetter {
+public class UpdatePetAccountResponse implements FileUrlSetter {
     private final Long petId;
     private final String name;
     private final Long mainBreedId;
@@ -26,10 +26,9 @@ public class RegisterPetAccountResponse implements FileUrlSetter {
     private final Boolean hasMicrochip;
     private String profileImgUrl;
     private String registerPdfUrl;
-    private final LocalDateTime createdAt;
 
-    public static RegisterPetAccountResponse from(PetAccount petAccount) {
-        return RegisterPetAccountResponse.builder()
+    public static UpdatePetAccountResponse from(PetAccount petAccount) {
+        return UpdatePetAccountResponse.builder()
                 .petId(petAccount.getPetId())
                 .name(petAccount.getName())
                 .mainBreedId(petAccount.getMainBreed().getId())
@@ -41,7 +40,6 @@ public class RegisterPetAccountResponse implements FileUrlSetter {
                 .birthday(petAccount.getBirthday())
                 .isNeutered(petAccount.getIsNeutered())
                 .hasMicrochip(petAccount.getHasMicrochip())
-                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -54,6 +52,4 @@ public class RegisterPetAccountResponse implements FileUrlSetter {
     public void setRegisterPdfUrl(String registerPdfUrl) {
         this.registerPdfUrl = registerPdfUrl;
     }
-
 }
-

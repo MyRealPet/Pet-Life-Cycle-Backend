@@ -11,27 +11,20 @@ import lombok.Getter;
 public class FileUploadResponse {
     private final Long fileId;
     private final String originalFileName;
+    private final String fileUrl;
     private final Long fileSize;
     private final String contentType;
     private final String message;
 
-    public static FileUploadResponse from(MetaDataFile file, String message) {
+    public static FileUploadResponse from(MetaDataFile file, String fileUrl, String message) {
         return new FileUploadResponse(
                 file.getId(),
                 file.getOriginalFileName(),
+                fileUrl,
                 file.getFileSize(),
                 file.getContentType(),
                 message
         );
     }
 
-//    public static FileUploadResponse from(MetaDataFile file, String message) {
-//        return FileUploadResponse.builder()
-//                .fileId(file.getId())
-//                .originalFileName(file.getOriginalFileName())
-//                .fileSize(file.getFileSize())
-//                .contentType(file.getContentType())
-//                .message(message)
-//                .build();
-//    }
 }
