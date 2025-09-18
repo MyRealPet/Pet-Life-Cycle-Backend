@@ -51,6 +51,16 @@ public class PetAccountServiceImpl implements PetAccountService {
     }
 
     @Override
+    public ReadPetAccountResponse readPetAccount(Long accountId, Long petId) {
+
+        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        ReadPetAccountResponse response = ReadPetAccountResponse.from(petAccount);
+        setFileUrl(response, petAccount);
+
+        return response;
+    }
+
+    @Override
     public ListPetAccountResponse listPetAccount(Long accountId) {
 
         try {
