@@ -50,6 +50,21 @@ public class PetAccountServiceImpl implements PetAccountService {
         return response;
     }
 
+    @Override
+    public ListPetAccountResponse listPetAccount(Long accountId) {
+
+        try {
+            List<PetAccount> petAccounts = petAccountRepository
+                    .findByAccountIdAndIsDeletedFalseOrderByCreatedAtDesc(accountId);
+
+            log.info("펫 리스트 조회 완료: accountId={}, count={}", accountId, petAccounts.size());
+            return ListPetAccountResponse.from(petAccounts, fileService);
+        } catch (Exception e) {
+            log.error("펫 리스트 조회 실패");
+            throw new RuntimeException("펫 리스트 조회에 실패했습니다.", e);
+        }
+    }
+
 
             if (subBreed.equals(mainBreed)) {
                 throw new RuntimeException("메인 품종과 같은 서브 품종을 입력할 수 없습니다.");

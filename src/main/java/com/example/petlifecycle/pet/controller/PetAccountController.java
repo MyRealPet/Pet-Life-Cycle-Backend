@@ -3,6 +3,7 @@ package com.example.petlifecycle.pet.controller;
 import com.example.petlifecycle.auth.service.AuthService;
 import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 import com.example.petlifecycle.pet.controller.request.RegisterPetAccountRequest;
+import com.example.petlifecycle.pet.controller.response.ListPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.RegisterPetAccountResponse;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.service.PetAccountService;
@@ -38,4 +39,18 @@ public class PetAccountController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<ListPetAccountResponse> list(@RequestHeader("Authorization") String authorizedHeader) {
+
+        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+
+        try {
+            log.info("Reading pet account: {}", accountId);
+            ListPetAccountResponse response = petAccountService.listPetAccount(accountId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("펫 정보 조회 실패: {}", e.getMessage());
+            throw new RuntimeException("펫 정보를 불러오는데 실패했습니다.");
+        }
+    }
 }
