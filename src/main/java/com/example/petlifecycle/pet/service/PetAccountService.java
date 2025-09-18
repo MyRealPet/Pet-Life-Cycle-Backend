@@ -16,4 +16,5 @@ public interface PetAccountService {
     UpdatePetAccountResponse updatePetAccount (Long accountId, Long petId, UpdatePetAccountRequest request);
     FileUploadResponse uploadProfileImage(Long accountId, Long petId, MultipartFile file);
     FileUploadResponse uploadRegistration(Long accountId, Long petId, MultipartFile file);
+    void deletePetAccount(Long accountId, Long petId);
 }

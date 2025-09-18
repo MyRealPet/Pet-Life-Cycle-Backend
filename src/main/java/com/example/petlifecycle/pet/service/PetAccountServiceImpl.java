@@ -191,6 +191,14 @@ public class PetAccountServiceImpl implements PetAccountService {
         }
     }
 
+    @Override
+    public void deletePetAccount(Long accountId, Long petId) {
+        PetAccount foundPet = getPetAccountWithAccount(petId, accountId);
+
+        foundPet.delete();
+        petAccountRepository.save(foundPet);
+    }
+
 
     private PetAccount getPetAccountWithAccount(Long petId, Long ownerId) {
         PetAccount petAccount = petAccountRepository.findByPetIdAndIsDeletedFalse(petId)

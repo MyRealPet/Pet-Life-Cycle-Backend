@@ -87,4 +87,19 @@ public class PetAccountController {
             throw new RuntimeException("펫 정보 수정에 실패했습니다.");
         }
     }
+
+    @DeleteMapping("/{petId}")
+    public ResponseEntity<String> delete(@RequestHeader("Authorization")String authorizedHeader, @PathVariable Long petId) {
+
+        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+
+        try {
+            petAccountService.deletePetAccount(accountId, petId);
+            return ResponseEntity.ok("펫 삭제에 성공했습니다.");
+        } catch (Exception e) {
+            log.error("펫 삭제 실패 (ID: {}): {}", petId, e.getMessage(), e);
+            throw new RuntimeException("펫 삭제에 실패했습니다.");
+        }
+    }
+
 }
