@@ -64,8 +64,17 @@ public class FileController {
     // 조회
 
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<String> deleteFile(@PathVariable Long fileId) {
+    public ResponseEntity<String> deleteFile(@RequestHeader("Authorization") String authorizedHeader, @PathVariable Long fileId) {
+
+        String userToken = authorizedHeader.replace("Bearer ", "");
+        Long accountId = redisCacheService.getValueByKey(userToken, Long.class);
+
         try {
+            MetaDataFile file = fileService.getFileById(fileId);
+
+            if (!file.getAccountId().equals(accountId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("파일을 삭제할 권한이 없습니다.");
+            }
             fileService.deleteFile(fileId);
             return ResponseEntity.ok("파일이 성공적으로 삭제되었습니다.");
         } catch (Exception e) {

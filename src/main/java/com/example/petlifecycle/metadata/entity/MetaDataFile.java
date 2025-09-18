@@ -72,7 +72,21 @@ public class MetaDataFile {
         this.relatedEntityId = relatedEntityId;
     }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+        this.isDeleted = true;
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+        this.isDeleted = false;
+    }
+
+    public void s3Delete() {
+        this.s3Deleted = true;
+    }
+
+    public boolean isAvailable() {
+        return !isDeleted && !s3Deleted;
     }
 }
