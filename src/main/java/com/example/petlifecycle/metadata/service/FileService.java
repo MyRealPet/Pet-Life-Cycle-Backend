@@ -7,6 +7,7 @@ import com.example.petlifecycle.metadata.entity.MetaDataFile;
 import com.example.petlifecycle.metadata.repository.MetaDataFileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class FileService {
     private final S3Service s3Service;
     private final MetaDataFileRepository metaDataFileRepository;
 
-    public MetaDataFile uploadFile(MultipartFile file, FileType fileType,
+    public MetaDataFile uploadFile(MultipartFile file, FileType fileType, Long accountId,
                                    AccessType accessType, String relatedEntityType, Long relatedEntityId) {
 
         // 파일 유효성 검증
@@ -41,17 +43,18 @@ public class FileService {
             String fileUrl = s3Service.uploadFile(file, s3Key);
 
             // 메타데이터 저장
-            MetaDataFile metaDataFile = MetaDataFile.builder()
-                    .originalFileName(file.getOriginalFilename())
-                    .storedFileName(storedFileName)
-                    .s3Key(s3Key)
-                    .contentType(file.getContentType())
-                    .fileSize(file.getSize())
-                    .fileType(fileType)
-                    .accessType(accessType)
-                    .relatedEntityType(relatedEntityType)
-                    .relatedEntityId(relatedEntityId)
-                    .build();
+            MetaDataFile metaDataFile = new MetaDataFile(
+                    accountId,
+                    file.getOriginalFilename(),
+                    storedFileName,
+                    s3Key,
+                    file.getContentType(),
+                    file.getSize(),
+                    fileType,
+                    accessType,
+                    relatedEntityType,
+                    relatedEntityId
+            );
 
             return metaDataFileRepository.save(metaDataFile);
         } catch (Exception e) {
@@ -59,6 +62,22 @@ public class FileService {
             throw new IllegalArgumentException("파일 업로드에 실패했습니다.");
         }
 
+    }
+
+    public MetaDataFile getFileById(Long fileId) {
+        return metaDataFileRepository.findById(fileId)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+    }
+
+    public String getFileUrl(String s3Key) {
+        MetaDataFile file = metaDataFileRepository.findByS3Key(s3Key)
+                .orElseThrow(()-> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        if (file.getAccessType() == AccessType.PRIVATE) {
+            return s3Service.generatePresignedUrl(s3Key, 60);
+        } else {
+            return s3Service.getPublicUrl(s3Key);
+        }
     }
 
     public void deleteFile(Long fileId) {

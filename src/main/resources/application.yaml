@@ -29,6 +29,12 @@ spring:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
 
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: ${SPRING_DATA_REDIS_PASSWORD}
+
   cloud:
     aws:
       credentials:
@@ -38,7 +44,6 @@ spring:
         static: ${CLOUD_AWS_REGION}
       s3:
         bucket: ${CLOUD_AWS_S3_BUCKET}
-        region: ${CLOUD_AWS_REGION}
         base-url: ${CLOUD_AWS_S3_BASE_URL}
       stack:
         auto: false
