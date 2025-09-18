@@ -8,6 +8,7 @@ import com.example.petlifecycle.metadata.entity.FileType;
 import com.example.petlifecycle.metadata.entity.MetaDataFile;
 import com.example.petlifecycle.metadata.service.FileService;
 import com.example.petlifecycle.pet.controller.request.RegisterPetAccountRequest;
+import com.example.petlifecycle.pet.controller.request.UpdatePetAccountRequest;
 import com.example.petlifecycle.pet.controller.response.*;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.repository.PetAccountRepository;
@@ -75,18 +76,120 @@ public class PetAccountServiceImpl implements PetAccountService {
         }
     }
 
+    @Override
+    @Transactional
+    public UpdatePetAccountResponse updatePetAccount(Long accountId, Long petId, UpdatePetAccountRequest request) {
 
-            if (subBreed.equals(mainBreed)) {
-                throw new RuntimeException("메인 품종과 같은 서브 품종을 입력할 수 없습니다.");
-            }
+        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        FileBackup backup = createFileBackup(petAccount);
+
+        petAccount.update(request);
+
+        Long requestedMainBreedId = request.getMainBreedId();
+        Long requestedSubBreedId = request.getSubBreedId();
+        if (!petAccount.getMainBreed().getId().equals(requestedMainBreedId)) {
+            Breed mainBreed = validateAndGetMainBreed(requestedMainBreedId);
+            petAccount.setMainBreed(mainBreed);
         }
 
-        PetAccount petAccount = request.toPetAccount(mainBreed, subBreed);
-        PetAccount savedPet = petAccountRepository.save(petAccount);
+        Long mainBreedId = petAccount.getMainBreed().getId();
+        if (requestedSubBreedId != null) {
+            Breed subBreed = validateAndGetSubBreed(requestedSubBreedId, mainBreedId);
+            petAccount.setSubBreed(subBreed);
+        } else {
+            petAccount.setSubBreed(null);
+        }
 
         try {
-            // 프로필 이미지 업로드 (있는 경우)
-            if (request.hasProfileImg()) {
+            handleFileUpdates(petAccount, accountId, request, backup);
+
+        } catch (Exception e) {
+            log.error("펫 정보 업데이트 실패: {}", e.getMessage());
+            rollbackFile(petAccount, backup);
+
+            throw new RuntimeException("파일 업로드에 실패하여 펫 정보 업데이트를 취소합니다.");
+        }
+
+        UpdatePetAccountResponse response = UpdatePetAccountResponse.from(petAccount);
+        setFileUrl(response, petAccount);
+
+        return response;
+    }
+
+    @Override
+    public FileUploadResponse uploadProfileImage(Long accountId, Long petId, MultipartFile file) {
+        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+
+        MetaDataFile originalProfileImg = petAccount.getProfileImg();
+        try {
+            if (originalProfileImg != null) {
+                fileService.softDeleteFile(originalProfileImg.getId());
+            }
+            MetaDataFile newProfileImg = fileService.uploadFile(
+                    file,
+                    FileType.PROFILE_IMAGE,
+                    accountId,
+                    AccessType.PUBLIC,
+                    "PetAccount",
+                    petAccount.getPetId()
+            );
+            petAccount.setProfileImg(newProfileImg);
+            petAccountRepository.save(petAccount);
+
+            if (originalProfileImg != null) {
+                fileService.hardDeleteFile(originalProfileImg.getId());
+            }
+
+            String fileUrl = fileService.getFileUrl(newProfileImg.getS3Key());
+            return FileUploadResponse.from(newProfileImg, fileUrl, "프로필 이미지가 성공적으로 업로드되었습니다.");
+
+        } catch (Exception e) {
+            log.error("프로필 이미지 업로드 실패, 원본으로 복구: {}", e.getMessage());
+            if (originalProfileImg != null) {
+                fileService.restoreFile(originalProfileImg.getId());
+                petAccount.setProfileImg(originalProfileImg);
+                petAccountRepository.save(petAccount);
+            }
+            throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.");
+        }
+    }
+
+    @Override
+    public FileUploadResponse uploadRegistration(Long accountId, Long petId, MultipartFile file) {
+        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+
+        MetaDataFile originalRegistrationPdf = petAccount.getRegistrationPdf();
+        try {
+            if (originalRegistrationPdf != null) {
+                fileService.softDeleteFile(originalRegistrationPdf.getId());
+            }
+            MetaDataFile newRegistrationPdf = fileService.uploadFile(
+                    file,
+                    FileType.REGISTRATION_PDF,
+                    accountId,
+                    AccessType.PRIVATE,
+                    "PetAccount",
+                    petAccount.getPetId()
+            );
+            petAccount.setRegistrationPdf(newRegistrationPdf);
+            petAccountRepository.save(petAccount);
+
+            if (originalRegistrationPdf != null) {
+                fileService.hardDeleteFile(originalRegistrationPdf.getId());
+            }
+
+            String fileUrl = fileService.getFileUrl(newRegistrationPdf.getS3Key());
+            return FileUploadResponse.from(newRegistrationPdf, fileUrl, "동물 등록증이 성공적으로 업로드되었습니다.");
+        } catch (Exception e) {
+            log.error("동물 등록증 업로드 실패, 원본으로 복구: {}", e.getMessage());
+            if (originalRegistrationPdf != null) {
+                fileService.restoreFile(originalRegistrationPdf.getId());
+                petAccount.setRegistrationPdf(originalRegistrationPdf);
+                petAccountRepository.save(petAccount);
+            }
+            throw new RuntimeException("동물 등록증 업로드에 실패했습니다.");
+        }
+    }
 
 
     private PetAccount getPetAccountWithAccount(Long petId, Long ownerId) {
@@ -127,6 +230,26 @@ public class PetAccountServiceImpl implements PetAccountService {
         }
     }
 
+    private static class FileBackup {
+        private final MetaDataFile profileImg;
+        private final MetaDataFile registrationPdf;
+
+        public FileBackup(MetaDataFile profileImg, MetaDataFile registrationPdf) {
+            this.profileImg = profileImg;
+            this.registrationPdf = registrationPdf;
+        }
+
+        public MetaDataFile getProfileImg() { return profileImg; }
+        public MetaDataFile getRegistrationPdf() { return registrationPdf; }
+    }
+
+    private FileBackup createFileBackup(PetAccount petAccount) {
+        return new FileBackup(
+                petAccount.getProfileImg(),
+                petAccount.getRegistrationPdf()
+        );
+    }
+
     private void handleFileRegistration(PetAccount petAccount, Long accountId, RegisterPetAccountRequest request) {
         try {
             if (request.hasProfileImg()) {
@@ -159,6 +282,66 @@ public class PetAccountServiceImpl implements PetAccountService {
             throw new RuntimeException("파일 업로드에 실패하여 펫 계정 생성을 취소합니다.", e);
         }
     }
+
+    private void handleFileUpdates(PetAccount petAccount, Long accountId,
+                                   UpdatePetAccountRequest request, FileBackup backup) {
+
+        if (request.hasProfileImg()) {
+            if(backup.getProfileImg() != null) {
+                fileService.softDeleteFile(backup.getProfileImg().getId());
+            }
+            MetaDataFile profileImgFile = fileService.uploadFile(
+                    request.getProfileImg(),
+                    FileType.PROFILE_IMAGE,
+                    accountId,
+                    AccessType.PUBLIC,
+                    "PetAccount",
+                    petAccount.getPetId()
+            );
+            petAccount.setProfileImg(profileImgFile);
+            petAccountRepository.save(petAccount);
+            if(backup.getProfileImg() != null) {
+                fileService.hardDeleteFile(backup.getProfileImg().getId());
+            }
+
+        }
+
+        if (request.hasRegisterPdf()) {
+            if(backup.getRegistrationPdf() != null) {
+                fileService.softDeleteFile(backup.getRegistrationPdf().getId());
+            }
+            MetaDataFile registrationPdfFile = fileService.uploadFile(
+                    request.getRegistrationPdf(),
+                    FileType.REGISTRATION_PDF,
+                    accountId,
+                    AccessType.PRIVATE,
+                    "PetAccount",
+                    petAccount.getPetId()
+            );
+            petAccount.setRegistrationPdf(registrationPdfFile);
+            petAccountRepository.save(petAccount);
+            if(backup.getRegistrationPdf() != null) {
+                fileService.hardDeleteFile(backup.getRegistrationPdf().getId());
+            }
+        }
+    }
+
+    public void rollbackFile(PetAccount petAccount, FileBackup backup) {
+        try {
+            if (backup.getProfileImg() != null) {
+                fileService.restoreFile(backup.getProfileImg().getId());
+                petAccount.setProfileImg(backup.getProfileImg());
+            }
+            if (backup.getRegistrationPdf() != null) {
+                fileService.restoreFile(backup.getRegistrationPdf().getId());
+                petAccount.setRegistrationPdf(backup.getRegistrationPdf());
+            }
+
+            petAccountRepository.save(petAccount);
+            log.info("파일 롤백 완료: petId={}",petAccount.getPetId());
+
+        } catch (Exception e) {
+            log.error("파일 롤백 실패: {}", e.getMessage());
         }
     }
 }

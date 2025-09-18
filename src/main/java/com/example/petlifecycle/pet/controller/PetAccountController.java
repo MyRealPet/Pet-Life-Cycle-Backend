@@ -3,9 +3,11 @@ package com.example.petlifecycle.pet.controller;
 import com.example.petlifecycle.auth.service.AuthService;
 import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 import com.example.petlifecycle.pet.controller.request.RegisterPetAccountRequest;
+import com.example.petlifecycle.pet.controller.request.UpdatePetAccountRequest;
 import com.example.petlifecycle.pet.controller.response.ListPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.ReadPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.RegisterPetAccountResponse;
+import com.example.petlifecycle.pet.controller.response.UpdatePetAccountResponse;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.service.PetAccountService;
 import com.example.petlifecycle.redis_cache.RedisCacheService;
@@ -70,4 +72,19 @@ public class PetAccountController {
         }
     }
 
+
+    @PutMapping(value = "/{petId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UpdatePetAccountResponse> update(@RequestHeader("Authorization")String authorizedHeader, @PathVariable("petId") Long petId, @ModelAttribute UpdatePetAccountRequest request) {
+
+        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+
+        try {
+            log.info("Registering pet account: {}", request);
+            UpdatePetAccountResponse response = petAccountService.updatePetAccount(accountId, petId, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("펫 수정 실패: {}", e.getMessage());
+            throw new RuntimeException("펫 정보 수정에 실패했습니다.");
+        }
+    }
 }
