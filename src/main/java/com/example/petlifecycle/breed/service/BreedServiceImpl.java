@@ -8,6 +8,7 @@ import com.example.petlifecycle.breed.controller.response.ReadBreedResponse;
 import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 import com.example.petlifecycle.breed.controller.response.UpdateBreedResponse;
 import com.example.petlifecycle.breed.entity.Breed;
+import com.example.petlifecycle.breed.entity.Species;
 import com.example.petlifecycle.breed.repository.BreedRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -72,6 +73,24 @@ public class BreedServiceImpl implements BreedService {
         foundBreed.delete();
 
         Breed deletedBreed = breedRepository.save(foundBreed);
+    }
+
+    @Override
+    public ListBreedResponse getBreedBySpecies(Species species, ListBreedRequest request) {
+        int page = request.getPage() > 0 ? request.getPage() - 1 : 0;  // 0-based page index
+        int perPage = request.getPerPage() > 0 ? request.getPerPage() : 10;
+
+        Pageable pageable = PageRequest.of(page, perPage);
+        Page<Breed> paginatedlaptopList = breedRepository.findAllBySpeciesAndIsDeletedFalse(species, pageable);
+
+        List<Breed> breedList = paginatedlaptopList.getContent();
+
+        return ListBreedResponse.from(
+                breedList,
+                paginatedlaptopList.getNumber() + 1,
+                paginatedlaptopList.getTotalPages(),
+                paginatedlaptopList.getTotalElements()
+        );
     }
 }
 
