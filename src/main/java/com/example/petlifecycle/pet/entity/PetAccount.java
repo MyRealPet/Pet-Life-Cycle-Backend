@@ -4,6 +4,7 @@ import com.example.petlifecycle.breed.entity.Breed;
 import com.example.petlifecycle.metadata.entity.MetaDataFile;
 import com.example.petlifecycle.pet.controller.request.UpdatePetAccountRequest;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,21 +31,25 @@ public class PetAccount {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "main_breed_id", nullable = false)
-    private Breed mainBreed;
-    // null 이거나 mainBreed 와 달라야 함 (믹스견)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_breed_id")
-    private Breed subBreed;
+    private Long mainBreedId;
 
-    private String gender;
+    private String customMainBreedName;
+
+    private Long subBreedId;
+
+    @Column(nullable = false)
+    private String gender = "UNKNOWN";
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
-    private Boolean isNeutered;
-    private Boolean hasMicrochip;
+    @Column(nullable = false)
+    private Boolean isNeutered = false;
+    @Column(nullable = false)
+    private Boolean hasMicrochip = false;
+
+    @Digits(integer = 15, fraction = 0, message = "15자리 숫자를 입력해주세요")
+    private Long registrationNum;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_img_id")
@@ -65,20 +70,24 @@ public class PetAccount {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    public PetAccount(Long accountId, String name, Breed mainBreed, Breed subBreed, String gender, LocalDate birthday, Boolean isNeutered, Boolean hasMicrochip) {
+    public PetAccount(Long accountId, String name, Long mainBreedId, String customMainBreedName, Long subBreedId, String gender, LocalDate birthday, Boolean isNeutered, Boolean hasMicrochip, Long registrationNum) {
         this.accountId = accountId;
         this.name = name;
-        this.mainBreed = mainBreed;
-        this.subBreed = subBreed;
+        this.mainBreedId = mainBreedId;
+        this.customMainBreedName = customMainBreedName;
+        this.subBreedId = subBreedId;
         this.gender = gender;
         this.birthday = birthday;
         this.isNeutered = isNeutered;
         this.hasMicrochip = hasMicrochip;
+        this.registrationNum = registrationNum;
     }
 
-    public void setMainBreed(Breed mainBreed) { this.mainBreed = mainBreed; }
+    public void setMainBreedId(Long mainBreedId) { this.mainBreedId = mainBreedId; }
 
-    public void setSubBreed(Breed subBreed) { this.subBreed = subBreed; }
+    public void setCustomMainBreedName(String customMainBreedName) { this.customMainBreedName = customMainBreedName; }
+
+    public void setSubBreedId(Long subBreedId) { this.subBreedId = subBreedId; }
 
     public void setProfileImg(MetaDataFile profileImg) {
         this.profileImg = profileImg;
@@ -94,6 +103,7 @@ public class PetAccount {
         this.birthday = request.getBirthday();
         this.isNeutered = request.getIsNeutered();
         this.hasMicrochip = request.getHasMicrochip();
+        this.registrationNum = request.getRegistrationNum();
     }
 
     public void delete() {

@@ -16,26 +16,30 @@ public class RegisterPetAccountRequest {
 
     private String name;
     private Long mainBreedId;
+    private String customMainBreedName;
     private Long subBreedId;
     private String gender;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
     private Boolean isNeutered;
     private Boolean hasMicrochip;
+    private Long registrationNum;
     private MultipartFile profileImg;
     private MultipartFile registerPdf;
 
-    public PetAccount toPetAccount(Long accountId, Breed mainBreed, Breed subBreed) {
+    public PetAccount toPetAccount(Long accountId) {
 
         return new PetAccount(
                 accountId,
                 name,
-                mainBreed,
-                subBreed,
+                mainBreedId,
+                customMainBreedName,
+                subBreedId,
                 gender,
                 birthday,
                 isNeutered,
-                hasMicrochip
+                hasMicrochip,
+                registrationNum
         );
     }
 

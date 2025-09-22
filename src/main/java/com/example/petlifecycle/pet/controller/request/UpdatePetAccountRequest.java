@@ -11,13 +11,18 @@ import java.time.LocalDate;
 public class UpdatePetAccountRequest {
     private final String name;
     private final Long mainBreedId;
+    private final String customMainBreedName;
     private final Long subBreedId;
     private final String gender;
     private final LocalDate birthday;
     private final Boolean isNeutered;
     private final Boolean hasMicrochip;
+    private final Long registrationNum;
     private final MultipartFile profileImg;
     private final MultipartFile registrationPdf;
+
+    private final Boolean deleteProfileImg;
+    private final Boolean deleteRegistrationPdf;
 
     public boolean hasProfileImg() {
         return profileImg != null && !profileImg.isEmpty();

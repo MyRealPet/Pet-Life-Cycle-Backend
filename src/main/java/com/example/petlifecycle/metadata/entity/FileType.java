@@ -12,8 +12,8 @@ public enum FileType {
     PROFILE_IMAGE("프로필 이미지",
             Arrays.asList("image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"),
             5 * 1024 * 1024L),
-    REGISTRATION_PDF("등록증 PDF",
-            Arrays.asList("application/pdf"),
+    REGISTRATION_PDF("등록증",
+            Arrays.asList("application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"),
             20 * 1024 * 1024L),
     MEDICAL_DOCUMENT("의료 문서",
             Arrays.asList("application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"),
@@ -22,5 +22,4 @@ public enum FileType {
     private final String description;
     private final List<String> allowedContentTypes;
     private final Long maxFileSize;
-//    private final String s3Prefix;
 }

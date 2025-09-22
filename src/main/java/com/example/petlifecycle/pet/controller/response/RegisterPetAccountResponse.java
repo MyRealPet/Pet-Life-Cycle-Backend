@@ -15,45 +15,16 @@ import java.util.Optional;
 @Getter
 @Builder
 @AllArgsConstructor
-public class RegisterPetAccountResponse implements FileUrlSetter {
-    private final Long petId;
-    private final String name;
-    private final Long mainBreedId;
-    private final Long subBreedId;
-    private final String gender;
-    private final LocalDate birthday;
-    private final Boolean isNeutered;
-    private final Boolean hasMicrochip;
-    private String profileImgUrl;
-    private String registerPdfUrl;
-    private final LocalDateTime createdAt;
+public class RegisterPetAccountResponse {
+    private final String message;
 
-    public static RegisterPetAccountResponse from(PetAccount petAccount) {
+    public static RegisterPetAccountResponse from(String petName) {
+        String message = "\"" + petName + "\"" + "이(가) 성공적으로 등록되었습니다!";
         return RegisterPetAccountResponse.builder()
-                .petId(petAccount.getPetId())
-                .name(petAccount.getName())
-                .mainBreedId(petAccount.getMainBreed().getId())
-                // subBreed null 체크
-                .subBreedId(Optional.ofNullable(petAccount.getSubBreed())
-                        .map(Breed::getId)
-                        .orElse(null))
-                .gender(petAccount.getGender())
-                .birthday(petAccount.getBirthday())
-                .isNeutered(petAccount.getIsNeutered())
-                .hasMicrochip(petAccount.getHasMicrochip())
-                .createdAt(LocalDateTime.now())
+                .message(message)
                 .build();
     }
 
-    @Override
-    public void setProfileImgUrl(String profileImgUrl) {
-        this.profileImgUrl = profileImgUrl;
-    }
-
-    @Override
-    public void setRegisterPdfUrl(String registerPdfUrl) {
-        this.registerPdfUrl = registerPdfUrl;
-    }
 
 }
 

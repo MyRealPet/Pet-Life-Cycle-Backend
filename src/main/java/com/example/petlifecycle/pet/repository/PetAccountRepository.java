@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.List;
 
 public interface PetAccountRepository extends JpaRepository<PetAccount, Long> {
+
     Optional<PetAccount> findByPetIdAndIsDeletedFalse(Long petId);
     List<PetAccount> findByAccountIdAndIsDeletedFalseOrderByCreatedAtDesc(Long accountId);
 }
