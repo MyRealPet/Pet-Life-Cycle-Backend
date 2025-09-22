@@ -186,9 +186,9 @@ public class FileService {
 
     private String generateS3Key(FileType fileType, String storedFileName) {
         String prefix = switch(fileType) {
-            case PROFILE_IMAGE -> "profiles/";
-            case REGISTRATION_PDF -> "registrations/";
-            case MEDICAL_DOCUMENT -> "medical/";
+            case PROFILE_IMAGE -> "pet/profiles/";
+            case REGISTRATION_PDF -> "pet/registrations/";
+            case MEDICAL_DOCUMENT -> "pet/medical/";
         };
 
         return prefix + storedFileName;
