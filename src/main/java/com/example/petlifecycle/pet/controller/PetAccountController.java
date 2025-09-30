@@ -1,17 +1,13 @@
 package com.example.petlifecycle.pet.controller;
 
 import com.example.petlifecycle.auth.service.AuthService;
-import com.example.petlifecycle.breed.controller.response.RegisterBreedResponse;
 import com.example.petlifecycle.pet.controller.request.RegisterPetAccountRequest;
 import com.example.petlifecycle.pet.controller.request.UpdatePetAccountRequest;
 import com.example.petlifecycle.pet.controller.response.ListPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.ReadPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.RegisterPetAccountResponse;
 import com.example.petlifecycle.pet.controller.response.UpdatePetAccountResponse;
-import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.service.PetAccountService;
-import com.example.petlifecycle.redis_cache.RedisCacheService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -28,10 +24,10 @@ public class PetAccountController {
     private final AuthService authService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<RegisterPetAccountResponse> register(@RequestHeader("Authorization") String authorizedHeader, @ModelAttribute RegisterPetAccountRequest request) {
+    public ResponseEntity<RegisterPetAccountResponse> register(/*@RequestHeader("Authorization") String authorizedHeader,*/ @ModelAttribute RegisterPetAccountRequest request) {
 
-        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
-
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
         try {
             log.info("Registering pet account: {}", request);
             RegisterPetAccountResponse response = petAccountService.registerPetAccount(accountId, request);
@@ -43,10 +39,10 @@ public class PetAccountController {
     }
 
     @GetMapping
-    public ResponseEntity<ListPetAccountResponse> list(@RequestHeader("Authorization") String authorizedHeader) {
+    public ResponseEntity<ListPetAccountResponse> list(/*@RequestHeader("Authorization") String authorizedHeader*/) {
 
-        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
-
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
         try {
             log.info("Reading pet account: {}", accountId);
             ListPetAccountResponse response = petAccountService.listPetAccount(accountId);
@@ -58,10 +54,10 @@ public class PetAccountController {
     }
 
     @GetMapping("/{petId}")
-    public ResponseEntity<ReadPetAccountResponse> read(@RequestHeader("Authorization")String authorizedHeader, @PathVariable Long petId) {
+    public ResponseEntity<ReadPetAccountResponse> read(/*@RequestHeader("Authorization")String authorizedHeader, */@PathVariable Long petId) {
 
-        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
-
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
         try {
             log.info("Reading pet account: {}", petId);
             ReadPetAccountResponse response = petAccountService.readPetAccount(accountId, petId);
@@ -74,10 +70,10 @@ public class PetAccountController {
 
 
     @PutMapping(value = "/{petId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UpdatePetAccountResponse> update(@RequestHeader("Authorization")String authorizedHeader, @PathVariable("petId") Long petId, @ModelAttribute UpdatePetAccountRequest request) {
+    public ResponseEntity<UpdatePetAccountResponse> update(/*@RequestHeader("Authorization")String authorizedHeader,*/ @PathVariable("petId") Long petId, @ModelAttribute UpdatePetAccountRequest request) {
 
-        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
-
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
         try {
             log.info("Registering pet account: {}", request);
             UpdatePetAccountResponse response = petAccountService.updatePetAccount(accountId, petId, request);
@@ -89,10 +85,10 @@ public class PetAccountController {
     }
 
     @DeleteMapping("/{petId}")
-    public ResponseEntity<String> delete(@RequestHeader("Authorization")String authorizedHeader, @PathVariable Long petId) {
+    public ResponseEntity<String> delete(/*@RequestHeader("Authorization")String authorizedHeader, */@PathVariable Long petId) {
 
-        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
-
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
         try {
             petAccountService.deletePetAccount(accountId, petId);
             return ResponseEntity.ok("펫 삭제에 성공했습니다.");

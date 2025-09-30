@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class ListBreedRequest {
-    private final int page;
-    private final int perPage;
+    private int page = 0;
+    private int perPage = 100;
 }
