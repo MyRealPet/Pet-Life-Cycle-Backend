@@ -25,7 +25,7 @@ public class RegisterPetAccountRequest {
     private Boolean hasMicrochip;
     private Long registrationNum;
     private MultipartFile profileImg;
-    private MultipartFile registerPdf;
+    private MultipartFile registrationPdf;
 
     public PetAccount toPetAccount(Long accountId) {
 
@@ -49,7 +49,7 @@ public class RegisterPetAccountRequest {
     }
 
     public boolean hasRegisterPdf() {
-        return registerPdf != null && !registerPdf.isEmpty();
+        return registrationPdf != null && !registrationPdf.isEmpty();
     }
 
 
