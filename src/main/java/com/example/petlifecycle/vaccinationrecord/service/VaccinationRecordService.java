@@ -6,7 +6,10 @@ import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.service.PetAccountService;
 import com.example.petlifecycle.vaccinationrecord.controller.request.RegisterVacRecordRequest;
 import com.example.petlifecycle.vaccinationrecord.controller.request.UpdateVacRecordRequest;
+import com.example.petlifecycle.vaccinationrecord.controller.response.ListVacRecordResponse;
 import com.example.petlifecycle.vaccinationrecord.controller.response.ReadVacRecordResponse;
+import com.example.petlifecycle.vaccinationrecord.controller.response.VaccinationRecordDto;
+import com.example.petlifecycle.vaccinationrecord.controller.response.VaccineWithRecordDto;
 import com.example.petlifecycle.vaccinationrecord.entity.VaccinationRecord;
 import com.example.petlifecycle.vaccinationrecord.repository.VaccinationRecordRepository;
 import com.example.petlifecycle.vaccine.entity.Vaccine;
@@ -52,6 +55,55 @@ public class VaccinationRecordService {
             vaccineName = vacRecord.getCustomVaccineName();
         }
         return ReadVacRecordResponse.from(vacRecord, vaccineName);
+    }
+
+    public ListVacRecordResponse listVacRecords(Long accountId, Long petId) {
+        PetAccount petAccount = petAccountService.validateAndGetPetAccount(petId, accountId);
+        Breed breed = breedRepository.findByIdAndIsDeletedFalse(petAccount.getMainBreedId())
+                .orElse(null);
+
+        List<Vaccine> vaccines = new ArrayList<>();
+        if (breed != null) {
+            vaccines = vaccineRepository.findBySpeciesAndIsDeletedFalseOrderByVaccineIdAsc(breed.getSpecies());
+        }
+        List<VaccinationRecord> vacRecs = vaccinationRecordRepository.findByPetIdAndIsDeletedFalseOrderByVaccinationDateDesc(petId);
+
+        // 등록된 백신 접종 기록
+        Map<Long, List<VaccinationRecord>> vacRecordMap = vacRecs.stream()
+                .collect(Collectors.groupingBy(vacRec -> vacRec.getVaccineId() != null ? vacRec.getVaccineId() : -1L));
+
+        List<VaccineWithRecordDto> vaccineWithRecordDtoList = vaccines.stream()
+                .map(vaccine -> {
+                    List<VaccinationRecord> recordList = vacRecordMap.getOrDefault(
+                            vaccine.getVaccineId(),
+                            Collections.emptyList()
+                    );
+
+                    List<VaccinationRecordDto> recordDtoList = recordList.stream()
+                            .map(record -> VaccinationRecordDto.from(record))
+                            .collect(Collectors.toList());
+
+                    return VaccineWithRecordDto.from(vaccine, recordDtoList);
+                })
+                .collect(Collectors.toList());
+
+        // 직접 입력한 백신 접종 기록
+        List<VaccinationRecord> customVacRecordList = vacRecordMap.getOrDefault(-1L, Collections.emptyList());
+
+        List<VaccinationRecordDto> customRecordDtoList = customVacRecordList.stream()
+                .map(record -> VaccinationRecordDto.from(record))
+                .collect(Collectors.toList());
+
+        VaccineWithRecordDto customVaccineDto =  VaccineWithRecordDto.builder()
+                .vaccineId(null)
+                .vaccineName("기타")
+                .description("등록되지 않은 백신 접종 내역")
+                .vaccinationRecords(customRecordDtoList)
+                .build();
+
+        vaccineWithRecordDtoList.add(customVaccineDto);
+
+        return new ListVacRecordResponse(vaccineWithRecordDtoList);
     }
 
     public void updateVaccinationRecord(Long accountId, Long petId, Long recordId, UpdateVacRecordRequest request) {

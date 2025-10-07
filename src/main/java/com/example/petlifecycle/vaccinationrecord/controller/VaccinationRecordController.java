@@ -3,6 +3,7 @@ package com.example.petlifecycle.vaccinationrecord.controller;
 import com.example.petlifecycle.auth.service.AuthService;
 import com.example.petlifecycle.vaccinationrecord.controller.request.RegisterVacRecordRequest;
 import com.example.petlifecycle.vaccinationrecord.controller.request.UpdateVacRecordRequest;
+import com.example.petlifecycle.vaccinationrecord.controller.response.ListVacRecordResponse;
 import com.example.petlifecycle.vaccinationrecord.controller.response.ReadVacRecordResponse;
 import com.example.petlifecycle.vaccinationrecord.entity.VaccinationRecord;
 import com.example.petlifecycle.vaccinationrecord.service.VaccinationRecordService;
@@ -46,6 +47,22 @@ public class VaccinationRecordController {
         } catch (Exception e) {
             log.error("{} 접종 이력 조회 실패: {}",recordId, e.getMessage());
             throw new RuntimeException(recordId +" 접종 이력 조회에 실패했습니다. accountId: "+ accountId + ", petId: " + petId);
+        }
+    }
+
+
+    // 백신 기록 조회
+    @GetMapping
+    public ResponseEntity<ListVacRecordResponse> listVaccinationRecord(/*@RequestHeader("Authorization")String authorizedHeader,*/ @PathVariable Long petId) {
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
+        try {
+            log.info("Listing vaccination record for account {}", accountId);
+            ListVacRecordResponse response = vaccinationRecordService.listVacRecords(accountId, petId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("접종 이력 조회 실패: {}", e.getMessage());
+            throw new RuntimeException("접종 이력 조회에 실패했습니다. accountId: "+ accountId + ", petId: " + petId);
         }
     }
 
