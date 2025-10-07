@@ -117,6 +117,15 @@ public class VaccinationRecordService {
         vacRecord.update(request.getCustomVaccineName(), request.getVaccinationDate(), request.getHospitalName());
     }
 
+    public void deleteVacRecord(Long accountId, Long petId, Long recordId) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+
+        VaccinationRecord vacRecord = vaccinationRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new RuntimeException("접종 이력을 찾는데 실패했습니다."));
+
+        vacRecord.delete();
+    }
+
     private void validateVacConstraints(Long vaccineId, String customVaccineName) {
         boolean hasVac = (vaccineId != null && vaccineId != 0);
         boolean hascustomVac = (customVaccineName != null && !customVaccineName.trim().isEmpty());

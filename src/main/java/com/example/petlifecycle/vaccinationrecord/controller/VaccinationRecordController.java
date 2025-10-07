@@ -81,4 +81,18 @@ public class VaccinationRecordController {
         }
     }
 
+    @DeleteMapping("/{recordId}")
+    public ResponseEntity<String> deleteVaccinationRecord(/*@RequestHeader("Authorization")String authorizedHeader,*/
+                                                          @PathVariable Long petId, @PathVariable Long recordId) {
+//        Long accountId = authService.getAccountIdFromToken(authorizedHeader);
+        Long accountId = 1001L;
+        try {
+            log.info("Deleting vaccination record for account {}", accountId);
+            vaccinationRecordService.deleteVacRecord(accountId, petId, recordId);
+            return ResponseEntity.ok("접종 이력 삭제 완료 accountId: "+ accountId + ", petId: " + petId);
+        } catch (Exception e) {
+            log.error("접종 이력 삭제 실패: {}", e.getMessage());
+            throw new RuntimeException("접종 이력 삭제에 실패했습니다. accountId: "+ accountId + ", petId: " + petId);
+        }
+    }
 }
