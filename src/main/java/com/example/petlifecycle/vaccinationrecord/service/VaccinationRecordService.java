@@ -5,6 +5,8 @@ import com.example.petlifecycle.breed.repository.BreedRepository;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.service.PetAccountService;
 import com.example.petlifecycle.vaccinationrecord.controller.request.RegisterVacRecordRequest;
+import com.example.petlifecycle.vaccinationrecord.controller.request.UpdateVacRecordRequest;
+import com.example.petlifecycle.vaccinationrecord.controller.response.ReadVacRecordResponse;
 import com.example.petlifecycle.vaccinationrecord.entity.VaccinationRecord;
 import com.example.petlifecycle.vaccinationrecord.repository.VaccinationRecordRepository;
 import com.example.petlifecycle.vaccine.entity.Vaccine;
@@ -35,6 +37,32 @@ public class VaccinationRecordService {
 
         VaccinationRecord vacRecord = request.toVaccinationRecord(petId);
         vaccinationRecordRepository.save(vacRecord);
+    }
+
+    public ReadVacRecordResponse readVacRecord(Long accountId, Long petId, Long recordId) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+        VaccinationRecord vacRecord = vaccinationRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new RuntimeException("접종 이력을 찾을 수 없습니다."));
+        String vaccineName = null;
+        if (vacRecord.getVaccineId() != null) {
+            Vaccine vaccine = vaccineRepository.findById(vacRecord.getVaccineId())
+                    .orElseThrow(() -> new RuntimeException("백신 정보를 찾는데 실패했습니다."));
+            vaccineName = vaccine.getVaccineName();
+        } else {
+            vaccineName = vacRecord.getCustomVaccineName();
+        }
+        return ReadVacRecordResponse.from(vacRecord, vaccineName);
+    }
+
+    public void updateVaccinationRecord(Long accountId, Long petId, Long recordId, UpdateVacRecordRequest request) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+
+        VaccinationRecord vacRecord = vaccinationRecordRepository.findByIdAndIsDeletedFalse(recordId)
+                .orElseThrow(() -> new RuntimeException("접종 이력을 찾는데 실패했습니다."));
+
+        validateVacConstraints(vacRecord.getVaccineId(), request.getCustomVaccineName());
+
+        vacRecord.update(request.getCustomVaccineName(), request.getVaccinationDate(), request.getHospitalName());
     }
 
     private void validateVacConstraints(Long vaccineId, String customVaccineName) {
