@@ -13,9 +13,11 @@ public class Breed {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Species species;
 
+    @Column(nullable = false)
     private String name;
     private String description;
 

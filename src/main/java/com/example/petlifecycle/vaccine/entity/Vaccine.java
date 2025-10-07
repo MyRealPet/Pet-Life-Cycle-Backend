@@ -16,16 +16,18 @@ import java.time.LocalDateTime;
 @Builder
 public class Vaccine {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vaccineId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Species species;
 
+    @Column(nullable = false)
     private String vaccineName;
     private String description;
     private String sideEffects;     //부작용
-    private String vaccineCycle;    //백신주기
+    private Integer vaccineCycle;    //백신주기
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -33,4 +35,10 @@ public class Vaccine {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+    public void delete() { isDeleted = true; }
 }

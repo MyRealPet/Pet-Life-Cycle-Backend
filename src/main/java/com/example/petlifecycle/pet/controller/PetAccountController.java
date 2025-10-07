@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/petlifecycle/profile")
+@RequestMapping("/api/pet/profile")
 public class PetAccountController {
 
     private final PetAccountService petAccountService;

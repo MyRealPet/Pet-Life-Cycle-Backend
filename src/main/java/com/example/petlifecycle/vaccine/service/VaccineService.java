@@ -34,7 +34,7 @@ public class VaccineService {
         }catch (IllegalArgumentException e){
             throw new RuntimeException("유효하지 않은 species 값입니다.");
         }
-        List<Vaccine> vaccineList = vaccineRepository.findBySpecies(s);
+        List<Vaccine> vaccineList = vaccineRepository.findBySpeciesAndIsDeletedFalseOrderByVaccineIdAsc(s);
         if(vaccineList.isEmpty()){
             throw new RuntimeException("해당 종의 백신이 없습니다..");
         }
@@ -55,7 +55,10 @@ public class VaccineService {
     }
 
     public void deleteVaccine(long id) {
-        vaccineRepository.deleteById(id);
+
+        Vaccine V = getVaccineById(id);
+        V.delete();
+        vaccineRepository.save(V);
     }
 
 

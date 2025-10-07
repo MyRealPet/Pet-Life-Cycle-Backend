@@ -12,7 +12,7 @@ public class VaccineRequest {
     private String vaccineName;
     private String description;
     private String sideEffects;
-    private String vaccineCycle;
+    private Integer vaccineCycle;
 
     public Vaccine toEntity() {
         return Vaccine.builder()

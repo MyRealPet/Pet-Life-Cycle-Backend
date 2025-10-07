@@ -49,7 +49,7 @@ public class PetAccountService {
 
     public ReadPetAccountResponse readPetAccount(Long accountId, Long petId) {
 
-        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        PetAccount petAccount = validateAndGetPetAccount(petId, accountId);
         Breed mainBreed = null;
         if (petAccount.getMainBreedId() != null) {
             mainBreed = breedRepository.findByIdAndIsDeletedFalse(petAccount.getMainBreedId())
@@ -102,7 +102,7 @@ public class PetAccountService {
     @Transactional
     public UpdatePetAccountResponse updatePetAccount(Long accountId, Long petId, UpdatePetAccountRequest request) {
 
-        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        PetAccount petAccount = validateAndGetPetAccount(petId, accountId);
         FileBackup backup = createFileBackup(petAccount);
 
         validateBreedUpdateConstraints(petAccount, request);
@@ -131,7 +131,7 @@ public class PetAccountService {
     }
 
     public FileUploadResponse uploadProfileImage(Long accountId, Long petId, MultipartFile file) {
-        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        PetAccount petAccount = validateAndGetPetAccount(petId, accountId);
 
         MetaDataFile originalProfileImg = petAccount.getProfileImg();
         try {
@@ -168,7 +168,7 @@ public class PetAccountService {
     }
 
     public FileUploadResponse uploadRegistration(Long accountId, Long petId, MultipartFile file) {
-        PetAccount petAccount = getPetAccountWithAccount(petId, accountId);
+        PetAccount petAccount = validateAndGetPetAccount(petId, accountId);
 
         MetaDataFile originalRegistrationPdf = petAccount.getRegistrationPdf();
         try {
@@ -204,14 +204,14 @@ public class PetAccountService {
     }
 
     public void deletePetAccount(Long accountId, Long petId) {
-        PetAccount foundPet = getPetAccountWithAccount(petId, accountId);
+        PetAccount foundPet = validateAndGetPetAccount(petId, accountId);
 
         foundPet.delete();
         petAccountRepository.save(foundPet);
     }
 
 
-    public PetAccount getPetAccountWithAccount(Long petId, Long accountId) {
+    public PetAccount validateAndGetPetAccount(Long petId, Long accountId) {
         PetAccount petAccount = petAccountRepository.findByPetIdAndIsDeletedFalse(petId)
                 .orElseThrow(() -> new RuntimeException("펫 정보를 찾을 수 없습니다."));
         if (!petAccount.getAccountId().equals(accountId)) {
