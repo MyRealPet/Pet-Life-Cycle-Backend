@@ -1,11 +1,12 @@
-package com.example.petlifecycle.dailymission;
+package com.example.petlifecycle.mission.pet;
 
+import com.example.petlifecycle.mission.pet.PetDailyMission;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-public class DailyMissionDto {
+public class PetDailyMissionDto {
 
     @Getter
     @NoArgsConstructor
@@ -27,7 +28,7 @@ public class DailyMissionDto {
             this.date = date;
         }
 
-        public static DailyMissionResponse from(DailyMission dailyMission) {
+        public static DailyMissionResponse from(PetDailyMission dailyMission) {
             return new DailyMissionResponse(
                     dailyMission.getId(),
                     dailyMission.getMissionContent(),

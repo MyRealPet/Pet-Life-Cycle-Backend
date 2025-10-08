@@ -1,9 +1,9 @@
-package com.example.petlifecycle.healthreport.service;
+package com.example.petlifecycle.health.report.service;
 
 import com.example.petlifecycle.global.ai.OpenAIService;
-import com.example.petlifecycle.healthreport.dto.HealthReportDto;
-import com.example.petlifecycle.healthreport.entity.HealthReport;
-import com.example.petlifecycle.healthreport.repository.HealthReportRepository;
+import com.example.petlifecycle.health.report.dto.HealthReportDto;
+import com.example.petlifecycle.health.report.entity.HealthReport;
+import com.example.petlifecycle.health.report.repository.HealthReportRepository;
 import com.example.petlifecycle.pet.entity.PetAccount;
 import com.example.petlifecycle.pet.repository.PetAccountRepository;
 import lombok.RequiredArgsConstructor;

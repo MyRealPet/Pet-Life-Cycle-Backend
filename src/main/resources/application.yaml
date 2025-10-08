@@ -6,6 +6,8 @@ spring:
     import: optional:file:.env[.properties]
   application:
     name: ${SPRING_APPLICATION_NAME}
+  main:
+    allow-bean-definition-overriding: true
 
   servlet:
     multipart:

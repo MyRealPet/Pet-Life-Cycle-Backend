@@ -1,4 +1,4 @@
-package com.example.petlifecycle.dailymission;
+package com.example.petlifecycle.mission.pet;
 
 import com.example.petlifecycle.pet.entity.PetAccount;
 import jakarta.persistence.*;
@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Entity
+@Entity(name = "PetDailyMission")
 @Getter
 @NoArgsConstructor
-public class DailyMission {
+public class PetDailyMission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class DailyMission {
 
     private LocalDate date;
 
-    public DailyMission(PetAccount petAccount, String missionContent) {
+    public PetDailyMission(PetAccount petAccount, String missionContent) {
         this.petAccount = petAccount;
         this.missionContent = missionContent;
         this.isCompleted = false;

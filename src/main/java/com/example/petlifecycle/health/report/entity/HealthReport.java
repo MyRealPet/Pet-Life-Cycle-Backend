@@ -1,4 +1,4 @@
-package com.example.petlifecycle.healthreport.entity;
+package com.example.petlifecycle.health.report.entity;
 
 import com.example.petlifecycle.pet.entity.PetAccount;
 import jakarta.persistence.*;

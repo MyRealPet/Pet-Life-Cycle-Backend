@@ -1,7 +1,7 @@
-package com.example.petlifecycle.healthreport.controller;
+package com.example.petlifecycle.health.report.controller;
 
-import com.example.petlifecycle.healthreport.dto.HealthReportDto;
-import com.example.petlifecycle.healthreport.service.HealthReportService;
+import com.example.petlifecycle.health.report.dto.HealthReportDto;
+import com.example.petlifecycle.health.report.service.HealthReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

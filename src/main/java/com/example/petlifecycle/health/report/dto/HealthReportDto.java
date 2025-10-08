@@ -1,6 +1,6 @@
-package com.example.petlifecycle.healthreport.dto;
+package com.example.petlifecycle.health.report.dto;
 
-import com.example.petlifecycle.healthreport.entity.HealthReport;
+import com.example.petlifecycle.health.report.entity.HealthReport;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
