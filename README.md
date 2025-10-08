@@ -34,17 +34,17 @@
 
 
 ## 🚀 시작하기 (Getting Started)
-
-### 1️⃣ 프로젝트 클론 (Clone)
 ```bash
+1️⃣ 프로젝트 클론 (Clone)
+
 git clone https://github.com/your-username/pet-life-cycle-backend.git
 cd pet-life-cycle-backend
 ⚠️ your-username을 실제 GitHub 계정명으로 변경하세요.
-```
 
 
-### 2️⃣ 환경 변수 설정 (Configuration)
-```bash
+
+2️⃣ 환경 변수 설정 (Configuration)
+
 src/main/resources/application.yaml에 아래 설정을 추가하세요.
 
 yaml
@@ -72,17 +72,17 @@ cloud:
 openai:
   api-key: your-openai-api-key
 📝 your- 로 시작하는 부분은 실제 값으로 교체하세요.
-```
 
 
-### 3️⃣ 프로젝트 실행 (Run)
-```bash
+
+3️⃣ 프로젝트 실행 (Run)
+
 ./gradlew bootRun
 프로젝트 루트 경로에서 명령어를 실행하세요.
 ```
 
 
-### 📝 API 명세 (API Specification)
+## 📝 API 명세 (API Specification)
 ```bash
 🐾 반려동물 (Pet)
 Method	Endpoint	Description
@@ -94,7 +94,7 @@ DELETE	/api/pets/{id}	반려동물 삭제
 ```
 
 
-### 📊 건강 관리 (Health)
+## 📊 건강 관리 (Health)
 ```bash
 Method	Endpoint	Description
 POST	/api/pets/{petId}/weights	체중 기록
@@ -105,7 +105,7 @@ GET	/api/pets/{petId}/health-reports	건강 리포트 조회
 ```
 
 
-### 💉 예방 접종 (Vaccine)
+## 💉 예방 접종 (Vaccine)
 ```bash
 Method	Endpoint	Description
 POST	/api/pets/{petId}/vaccines	예방접종 기록 추가
@@ -115,7 +115,7 @@ DELETE	/api/vaccines/{vaccineId}	예방접종 기록 삭제
 ```
 
 
-### 🎯 미션 (Mission)
+## 🎯 미션 (Mission)
 ```bash
 Method	Endpoint	Description
 GET	/api/missions/daily	오늘의 데일리 미션 조회
@@ -123,21 +123,21 @@ POST	/api/missions/{missionId}/complete	미션 완료 기록
 ```
 
 
-### 🤖 AI 챗봇 (AI Chatbot)
+## 🤖 AI 챗봇 (AI Chatbot)
 ```bash
 Method	Endpoint	Description
 POST	/api/ai/question	AI 챗봇 질문/응답
 ```
 
 
-### ☁️ 파일 (File)
+## ☁️ 파일 (File)
 ```bash
 Method	Endpoint	Description
 POST	/api/files/upload	파일 업로드 (S3)
 ```
 
 
-### 📁 프로젝트 구조 (Project Structure)
+## 📁 프로젝트 구조 (Project Structure)
 ```bash
 .
 ├── src
