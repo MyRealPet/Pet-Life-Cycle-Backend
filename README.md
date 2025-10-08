@@ -48,7 +48,6 @@ cd pet-life-cycle-backend
 src/main/resources/application.yaml에 아래 설정을 추가하세요.
 
 yaml
-코드 복사
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/your-database-name
