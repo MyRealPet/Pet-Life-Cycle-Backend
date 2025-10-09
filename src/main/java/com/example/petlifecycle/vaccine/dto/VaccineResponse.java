@@ -12,7 +12,7 @@ public class VaccineResponse {
     private final String vaccineName;
     private final String description;
     private final String sideEffects;
-    private final String vaccineCycle;
+    private final Integer vaccineCycle;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 

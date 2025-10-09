@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/vaccine")
+@RequestMapping("/api/admin/pet/vaccine")
 public class VaccineController {
     private final VaccineService vaccineService;
 
@@ -30,13 +30,13 @@ public class VaccineController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/id/{id}")
-    public VaccineResponse getVaccineById(@PathVariable long id) {
-        return VaccineResponse.fromVaccine(vaccineService.getVaccineById(id));
+    @GetMapping("/{vaccineId}")
+    public VaccineResponse getVaccineById(@PathVariable Long vaccineId) {
+        return VaccineResponse.fromVaccine(vaccineService.getVaccineById(vaccineId));
     }
 
     //종별 백신 조회
-    @GetMapping("/species/{species}")
+    @GetMapping("/{species}")
     public List<VaccineResponse> getVaccineBySpecies(@PathVariable String species) {
         return vaccineService.getVaccineBySpecies(species)
                 .stream()
@@ -44,14 +44,14 @@ public class VaccineController {
                 .collect(Collectors.toList());
     }
 
-    @PutMapping("/{id}")
-    public VaccineResponse updateVaccine(@PathVariable Long id, @RequestBody VaccineRequest request) {
-        return VaccineResponse.fromVaccine(vaccineService.updateVaccine(id, request.toEntity()));
+    @PutMapping("/{vaccineId}")
+    public VaccineResponse updateVaccine(@PathVariable Long vaccineId, @RequestBody VaccineRequest request) {
+        return VaccineResponse.fromVaccine(vaccineService.updateVaccine(vaccineId, request.toEntity()));
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteVaccine(@PathVariable Long id) {
-        vaccineService.deleteVaccine(id);
+    @DeleteMapping("/{vaccineId}")
+    public void deleteVaccine(@PathVariable Long vaccineId) {
+        vaccineService.deleteVaccine(vaccineId);
     }
 
 }

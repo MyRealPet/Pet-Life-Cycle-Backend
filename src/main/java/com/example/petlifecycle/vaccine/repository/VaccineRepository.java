@@ -5,8 +5,10 @@ import com.example.petlifecycle.vaccine.entity.Vaccine;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VaccineRepository extends JpaRepository<Vaccine, Long> {
 
-    List<Vaccine> findBySpecies(Species s);
+    List<Vaccine> findBySpeciesAndIsDeletedFalseOrderByVaccineIdAsc(Species s);
+    Optional<Vaccine> findById(Long vaccineId);
 }

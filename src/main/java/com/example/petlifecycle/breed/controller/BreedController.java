@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/petlifecycle/breed")
+@RequestMapping("/api/admin/pet/breed")
 public class BreedController {
 
     private final BreedService breedService;
@@ -68,7 +68,7 @@ public class BreedController {
         }
     }
 
-    @DeleteMapping("/{breedId}")
+    @DeleteMapping
     public ResponseEntity<String> delete(@PathVariable Long breedId) {
         try {
             breedService.deleteBreed(breedId);
