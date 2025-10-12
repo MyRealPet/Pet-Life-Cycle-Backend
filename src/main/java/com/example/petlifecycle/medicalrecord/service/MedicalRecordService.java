@@ -197,6 +197,55 @@ public class MedicalRecordService {
 
         log.info("진료기록 수정 완료: recordId={}", recordId);
     }
+
+    public void deleteMedicalRecord(Long accountId, Long petId, Long recordId) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+        MedicalRecord record = validateAndGetmedicalRecord(petId, recordId);
+
+        testItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .forEach(item -> {
+                    item.delete();
+                    testItemRepository.save(item);
+                });
+
+        treatmentItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .forEach(item -> {
+                    item.delete();
+                    treatmentItemRepository.save(item);
+                });
+
+        medicationItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .forEach(item -> {
+                    item.delete();
+                    medicationItemRepository.save(item);
+                });
+
+        medicalRecordAttachmentRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .forEach(item -> {
+                    item.delete();
+                    medicalRecordAttachmentRepository.save(item);
+                    if (item.getFileId() != null) {
+                        try {
+                            fileService.softDeleteFile(item.getFileId());
+                        } catch (Exception e) {
+                            log.warn("청구서 파일 삭제 실패: fileId={}, error={}", item.getFileId(), e.getMessage());
+                        }
+                    }
+                });
+        if (record.getReceiptFiledId() != null) {
+            try {
+                fileService.softDeleteFile(record.getReceiptFiledId());
+            } catch (Exception e) {
+                log.warn("청구서 파일 삭제 실패: fileId={}, error={}", record.getReceiptFiledId(), e.getMessage());
+            }
+        }
+
+        record.delete();
+        medicalRecordRepository.save(record);
+
+        log.info("진료기록 삭제 완료: recordId={}, petId={}, accountId={}", recordId, petId, accountId);
+    }
+
     private MedicalRecord validateAndGetmedicalRecord(Long petId, Long recordId) {
         MedicalRecord record = medicalRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("진료기록을 찾을 수 없습니다."));

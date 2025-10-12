@@ -69,3 +69,15 @@ public class MedicalRecordController {
             throw new RuntimeException("진료기록 수정에 실패하셨습니다.");
         }
     }
+
+    @DeleteMapping("/{recordId}")
+    public ResponseEntity<String> deleteMedicalRecord(@PathVariable("petId") Long petId, @PathVariable Long recordId) {
+        Long accountId = 1001L;
+        try {
+            medicalRecordService.deleteMedicalRecord(accountId, petId, recordId);
+            return ResponseEntity.ok("진료기록 삭제에 성공하셨습니다.");
+        } catch (Exception e) {
+            log.error("{} 진료기록 삭제 실패: {}", recordId, e.getMessage());
+            throw new RuntimeException("진료기록 삭제에 실패하셨습니다.");
+        }
+    }
