@@ -2,6 +2,7 @@ package com.example.petlifecycle.medicalrecord.controller;
 
 import com.example.petlifecycle.medicalrecord.controller.request.ListMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.request.RegisterMedicalRecordRequest;
+import com.example.petlifecycle.medicalrecord.controller.request.UpdateMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.response.ListMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.controller.response.ReadMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.service.MedicalRecordService;
@@ -53,5 +54,18 @@ public class MedicalRecordController {
         } catch (Exception e) {
             log.error("{} 진료기록 조회 실패: {}", recordId, e.getMessage());
             throw new RuntimeException("진료기록 조회에 실패했습니다.");
+        }
+    }
+
+    @PutMapping("/{recordId}")
+    public ResponseEntity<String> updateMedicalRecord(@PathVariable("petId") Long petId, @PathVariable Long recordId,
+                                                                   @RequestBody @Valid UpdateMedicalRecordRequest request) {
+        Long accountId = 1001L;
+        try {
+            medicalRecordService.updateMedicalRecord(accountId, petId, recordId, request);
+            return ResponseEntity.ok("진료기록 수정에 성공하셨습니다.");
+        } catch (Exception e) {
+            log.error("{} 진료기록 수정 실패: {}", recordId, e.getMessage());
+            throw new RuntimeException("진료기록 수정에 실패하셨습니다.");
         }
     }

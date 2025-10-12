@@ -6,6 +6,7 @@ import com.example.petlifecycle.medicalrecord.controller.dto.TestItemDto;
 import com.example.petlifecycle.medicalrecord.controller.dto.TreatmentItemDto;
 import com.example.petlifecycle.medicalrecord.controller.request.ListMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.request.RegisterMedicalRecordRequest;
+import com.example.petlifecycle.medicalrecord.controller.request.UpdateMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.response.ListMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.controller.response.ReadMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.entity.*;
@@ -177,6 +178,25 @@ public class MedicalRecordService {
                 .build();
 
     }
+
+    public void updateMedicalRecord(Long accountId, Long petId, Long recordId, UpdateMedicalRecordRequest request) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+        MedicalRecord record = validateAndGetmedicalRecord(petId, recordId);
+
+        record.update(
+                request.getHospitalName(), request.getHospitalNumber(), request.getHospitalAddress(),
+                request.getVisitDate(), request.getTotalAmount(), request.getVatAmount(),
+                request.getReceiptFileId(), request.getDiagnosis(), request.getSymptoms()
+        );
+        medicalRecordRepository.save(record);
+
+        updateTestItems(recordId, request.getTestItems());
+        updateTreatmentItems(recordId, request.getTreatmentItems());
+        updateMedicationItems(recordId, request.getMedicationItems());
+        updateAttachments(recordId, request.getAttachmentFileIds());
+
+        log.info("진료기록 수정 완료: recordId={}", recordId);
+    }
     private MedicalRecord validateAndGetmedicalRecord(Long petId, Long recordId) {
         MedicalRecord record = medicalRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("진료기록을 찾을 수 없습니다."));
@@ -210,4 +230,148 @@ public class MedicalRecordService {
             return null;
         }
     }
+
+    private void updateTestItems(Long recordId, List<TestItemDto> newTestItems) {
+        List<TestItem> existingItems = testItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId);
+
+        if (newTestItems == null || newTestItems.isEmpty()) {
+            existingItems.forEach(item -> {
+                item.delete();
+                testItemRepository.save(item);
+            });
+            return;
+        }
+
+        Map<Long, TestItem> existingMap = existingItems.stream()
+                .collect(Collectors.toMap(TestItem::getId, item -> item));
+
+        Set<Long> checkIds = new HashSet<>();
+
+        for(TestItemDto dto : newTestItems) {
+            if (dto.getId() != null && existingMap.containsKey(dto.getId())) {
+                TestItem existing = existingMap.get(dto.getId());
+                existing.update(dto.getName(), dto.getQuantity(), dto.getUnitPrice(),
+                        dto.getAmount(), dto.getNotes());
+                testItemRepository.save(existing);
+                checkIds.add(existing.getId());
+            } else {
+                TestItem newItem = dto.toTestItem(recordId);
+                testItemRepository.save(newItem);
+            }
+        }
+
+        existingItems.stream()
+                .filter(item -> !checkIds.contains(item.getId()))
+                .forEach(item -> {
+                    item.delete();
+                    testItemRepository.save(item);
+                });
+    }
+
+    private void updateTreatmentItems(Long recordId, List<TreatmentItemDto> newTreatmentItems) {
+        List<TreatmentItem> existingItems = treatmentItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId);
+
+        if (newTreatmentItems == null || newTreatmentItems.isEmpty()) {
+            existingItems.forEach(item -> {
+                item.delete();
+                treatmentItemRepository.save(item);
+            });
+            return;
+        }
+
+        Map<Long, TreatmentItem> existingMap = existingItems.stream()
+                .collect(Collectors.toMap(TreatmentItem::getId, item -> item));
+
+        Set<Long> checkIds = new HashSet<>();
+
+        for(TreatmentItemDto dto : newTreatmentItems) {
+            if (dto.getId() != null && existingMap.containsKey(dto.getId())) {
+                TreatmentItem existing = existingMap.get(dto.getId());
+                existing.update(dto.getName(), dto.getQuantity(), dto.getUnitPrice(),
+                        dto.getAmount(), dto.getNotes());
+                treatmentItemRepository.save(existing);
+                checkIds.add(existing.getId());
+            } else {
+                TreatmentItem newItem = dto.toTreatmentItem(recordId);
+                treatmentItemRepository.save(newItem);
+            }
+        }
+
+        existingItems.stream()
+                .filter(item -> !checkIds.contains(item.getId()))
+                .forEach(item -> {
+                    item.delete();
+                    treatmentItemRepository.save(item);
+                });
+    }
+
+    private void updateMedicationItems(Long recordId, List<MedicationItemDto> newMedicationItems) {
+        List<MedicationItem> existingItems = medicationItemRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId);
+
+        if (newMedicationItems == null || newMedicationItems.isEmpty()) {
+            existingItems.forEach(item -> {
+                item.delete();
+                medicationItemRepository.save(item);
+            });
+            return;
+        }
+
+        Map<Long, MedicationItem> existingMap = existingItems.stream()
+                .collect(Collectors.toMap(MedicationItem::getId, item -> item));
+
+        Set<Long> checkIds = new HashSet<>();
+
+        for(MedicationItemDto dto : newMedicationItems) {
+            if (dto.getId() != null && existingMap.containsKey(dto.getId())) {
+                MedicationItem existing = existingMap.get(dto.getId());
+                existing.update(dto.getName(), dto.getQuantity(), dto.getUnitPrice(),
+                        dto.getAmount(), dto.getNotes());
+                medicationItemRepository.save(existing);
+                checkIds.add(existing.getId());
+            } else {
+                MedicationItem newItem = dto.toMedicationItem(recordId);
+                medicationItemRepository.save(newItem);
+            }
+        }
+
+        existingItems.stream()
+                .filter(item -> !checkIds.contains(item.getId()))
+                .forEach(item -> {
+                    item.delete();
+                    medicationItemRepository.save(item);
+                });
+    }
+
+    private void updateAttachments(Long recordId, List<Long> newFileIds) {
+        List<MedicalRecordAttachment> existingAttachments = medicalRecordAttachmentRepository.findByMedicalRecordIdAndIsDeletedFalse(recordId);
+
+        if (newFileIds == null || newFileIds.isEmpty()) {
+            existingAttachments.forEach(attachment -> {
+                attachment.delete();
+                medicalRecordAttachmentRepository.save(attachment);
+            });
+            return;
+        }
+
+        Set<Long> existingFileIds = existingAttachments.stream()
+                .map(MedicalRecordAttachment::getFileId)
+                .collect(Collectors.toSet());
+
+        Set<Long> newFileIdSet = new HashSet<>(newFileIds);
+
+        newFileIds.stream()
+                .filter(fileId -> !existingFileIds.contains(fileId))
+                .forEach(fileId -> {
+                    MedicalRecordAttachment attachment = new MedicalRecordAttachment(recordId, fileId);
+                    medicalRecordAttachmentRepository.save(attachment);
+                });
+
+        existingAttachments.stream()
+                .filter(attachment -> !newFileIdSet.contains(attachment.getFileId()))
+                .forEach(attachment -> {
+                    attachment.delete();
+                    medicalRecordAttachmentRepository.save(attachment);
+                });
+    }
+}
 
