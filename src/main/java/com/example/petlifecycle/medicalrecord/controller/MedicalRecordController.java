@@ -3,6 +3,7 @@ package com.example.petlifecycle.medicalrecord.controller;
 import com.example.petlifecycle.medicalrecord.controller.request.ListMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.request.RegisterMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.response.ListMedicalRecordResponse;
+import com.example.petlifecycle.medicalrecord.controller.response.ReadMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.service.MedicalRecordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,3 +44,14 @@ public class MedicalRecordController {
         }
     }
 
+    @GetMapping("/{recordId}")
+    public ResponseEntity<ReadMedicalRecordResponse> readMedicalRecord(@PathVariable("petId") Long petId, @PathVariable Long recordId) {
+        try {
+            Long accountId = 1001L;
+            ReadMedicalRecordResponse response = medicalRecordService.readMedicalRecord(accountId, petId, recordId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("{} 진료기록 조회 실패: {}", recordId, e.getMessage());
+            throw new RuntimeException("진료기록 조회에 실패했습니다.");
+        }
+    }

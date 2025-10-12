@@ -7,6 +7,7 @@ import com.example.petlifecycle.medicalrecord.controller.dto.TreatmentItemDto;
 import com.example.petlifecycle.medicalrecord.controller.request.ListMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.request.RegisterMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.response.ListMedicalRecordResponse;
+import com.example.petlifecycle.medicalrecord.controller.response.ReadMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.entity.*;
 import com.example.petlifecycle.medicalrecord.repository.*;
 import com.example.petlifecycle.metadata.entity.MetaDataFile;
@@ -94,6 +95,88 @@ public class MedicalRecordService {
         );
     }
 
+    public ReadMedicalRecordResponse readMedicalRecord(Long accountId, Long petId, Long recordId) {
+        petAccountService.validateAndGetPetAccount(petId, accountId);
+        MedicalRecord record = validateAndGetmedicalRecord(petId, recordId);
+
+        // 검사 내역 조회
+        List<TestItemDto> testItems = testItemRepository
+                .findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .stream()
+                .map(item -> TestItemDto.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .amount(item.getAmount())
+                        .notes(item.getNotes())
+                        .build())
+                .collect(Collectors.toList());
+
+        // 처치 내역 조회
+        List<TreatmentItemDto> treatmentItems = treatmentItemRepository
+                .findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .stream()
+                .map(item -> TreatmentItemDto.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .amount(item.getAmount())
+                        .notes(item.getNotes())
+                        .build())
+                .collect(Collectors.toList());
+
+        // 처방 내역 조회
+        List<MedicationItemDto> medicationItems = medicationItemRepository
+                .findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .stream()
+                .map(item -> MedicationItemDto.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .amount(item.getAmount())
+                        .notes(item.getNotes())
+                        .build())
+                .collect(Collectors.toList());
+
+        FileInfoDto receiptFile = null;
+        if (record.getReceiptFiledId() != null) {
+            receiptFile = getFileInfo(record.getReceiptFiledId());
+        }
+
+        // 첨부파일 정보 조회
+        List<Long> attachmentFileIds = medicalRecordAttachmentRepository
+                .findByMedicalRecordIdAndIsDeletedFalse(recordId)
+                .stream()
+                .map(MedicalRecordAttachment::getFileId)
+                .collect(Collectors.toList());
+
+        List<FileInfoDto> attachmentFiles = attachmentFileIds.stream()
+                .map(this::getFileInfo)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return ReadMedicalRecordResponse.builder()
+                .id(record.getId())
+                .petId(record.getPetId())
+                .hospitalName(record.getHospitalName())
+                .hospitalNumber(record.getHospitalNumber())
+                .hospitalAddress(record.getHospitalAddress())
+                .visitDate(record.getVisitDate())
+                .totalAmount(record.getTotalAmount())
+                .vatAmount(record.getVatAmount())
+                .diagnosis(record.getDiagnosis())
+                .symptoms(record.getSymptoms())
+                .receiptFile(receiptFile)
+                .attachmentFiles(attachmentFiles)
+                .testItems(testItems)
+                .treatmentItems(treatmentItems)
+                .medicationItems(medicationItems)
+                .build();
+
+    }
     private MedicalRecord validateAndGetmedicalRecord(Long petId, Long recordId) {
         MedicalRecord record = medicalRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("진료기록을 찾을 수 없습니다."));
@@ -103,4 +186,28 @@ public class MedicalRecordService {
         return record;
     }
 
+    private FileInfoDto getFileInfo(Long fileId) {
+        try {
+            MetaDataFile file = fileService.getFileById(fileId);
+
+            // 삭제되었거나 사용 불가능한 파일은 제외
+            if (!file.isAvailable()) {
+                log.warn("사용 불가능한 파일: fileId={}", fileId);
+                return null;
+            }
+
+            String fileUrl = fileService.getFileUrl(file.getS3Key());
+
+            return FileInfoDto.builder()
+                    .fileId(file.getId())
+                    .fileName(file.getOriginalFileName())
+                    .fileUrl(fileUrl)
+                    .fileSize(file.getFileSize())
+                    .contentType(file.getContentType())
+                    .build();
+        } catch (Exception e) {
+            log.error("파일 정보 조회 실패: fileId={}, error={}", fileId, e.getMessage());
+            return null;
+        }
+    }
 
