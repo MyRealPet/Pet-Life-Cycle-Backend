@@ -26,15 +26,16 @@ public class FileController {
 
     @PostMapping(value = "/upload")
     public ResponseEntity<FileUploadResponse> uploadFile(
-            @RequestHeader("Authorization") String authorizedHeader,
+            /*@RequestHeader("Authorization") String authorizedHeader,*/
             @RequestParam("file") MultipartFile file,
             @RequestParam("fileType") FileType fileType,
             @RequestParam(value = "accessType", defaultValue = "PRIVATE") AccessType accessType,
             @RequestParam(value = "relatedEntityType", required = false) String relatedEntityType,
             @RequestParam(value = "relatedEntityId", required = false) Long relatedEntityId) {
 
-        String userToken = authorizedHeader.replace("Bearer ", "");
-        Long accountId = redisCacheService.getValueByKey(userToken, Long.class);
+//        String userToken = authorizedHeader.replace("Bearer ", "");
+//        Long accountId = redisCacheService.getValueByKey(userToken, Long.class);
+        Long accountId = 1001L;
 
         try {
             MetaDataFile uploadedFile = fileService.uploadFile(
@@ -64,10 +65,11 @@ public class FileController {
     // 조회
 
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<String> deleteFile(@RequestHeader("Authorization") String authorizedHeader, @PathVariable Long fileId) {
+    public ResponseEntity<String> deleteFile(/*@RequestHeader("Authorization") String authorizedHeader,*/ @PathVariable Long fileId) {
 
-        String userToken = authorizedHeader.replace("Bearer ", "");
-        Long accountId = redisCacheService.getValueByKey(userToken, Long.class);
+//        String userToken = authorizedHeader.replace("Bearer ", "");
+//        Long accountId = redisCacheService.getValueByKey(userToken, Long.class);
+        Long accountId = 1001L;
 
         try {
             MetaDataFile file = fileService.getFileById(fileId);

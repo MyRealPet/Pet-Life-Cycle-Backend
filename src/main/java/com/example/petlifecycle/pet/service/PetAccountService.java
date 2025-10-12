@@ -85,6 +85,15 @@ public class PetAccountService {
                             .map(petAccount -> {
                                 Breed mainBreed = breedMap.get(petAccount.getMainBreedId());
                                 Breed subBreed = breedMap.get(petAccount.getSubBreedId());
+
+                                if (petAccount.getProfileImg() != null) {
+                                    log.info("🐾 Pet: {}, AccessType: {}, S3Key: {}",
+                                            petAccount.getName(),
+                                            petAccount.getProfileImg().getAccessType(),
+                                            petAccount.getProfileImg().getS3Key()
+                                    );
+                                }
+
                                 String profileImgUrl = getFileUrlIfAvailable(petAccount.getProfileImg());
                                 String registrationPdfUrl = getFileUrlIfAvailable(petAccount.getRegistrationPdf());
 
@@ -142,7 +151,7 @@ public class PetAccountService {
                     file,
                     FileType.PROFILE_IMAGE,
                     accountId,
-                    AccessType.PUBLIC,
+                    AccessType.PRIVATE,
                     "PetAccount",
                     petAccount.getPetId()
             );
@@ -335,7 +344,7 @@ public class PetAccountService {
                         request.getProfileImg(),
                         FileType.PROFILE_IMAGE,
                         accountId,
-                        AccessType.PUBLIC,
+                        AccessType.PRIVATE,
                         "PetAccount",
                         petAccount.getPetId()
                 );
@@ -378,7 +387,7 @@ public class PetAccountService {
                     request.getProfileImg(),
                     FileType.PROFILE_IMAGE,
                     accountId,
-                    AccessType.PUBLIC,
+                    AccessType.PRIVATE,
                     "PetAccount",
                     petAccount.getPetId()
             );

@@ -36,15 +36,15 @@ public class BreedServiceImpl implements BreedService {
         int perPage = request.getPerPage() > 0 ? request.getPerPage() : 10;
 
         Pageable pageable = PageRequest.of(page, perPage);
-        Page<Breed> paginatedlaptopList = breedRepository.findAllByIsDeletedFalse(pageable);
+        Page<Breed> paginatedBreedList = breedRepository.findAllByIsDeletedFalse(pageable);
 
-        List<Breed> breedList = paginatedlaptopList.getContent();
+        List<Breed> breedList = paginatedBreedList.getContent();
 
         return ListBreedResponse.from(
                 breedList,
-                paginatedlaptopList.getNumber() + 1,
-                paginatedlaptopList.getTotalPages(),
-                paginatedlaptopList.getTotalElements()
+                paginatedBreedList.getNumber() + 1,
+                paginatedBreedList.getTotalPages(),
+                paginatedBreedList.getTotalElements()
         );
     }
 
