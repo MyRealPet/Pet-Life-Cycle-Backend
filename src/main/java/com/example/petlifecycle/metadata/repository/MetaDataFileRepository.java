@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface MetaDataFileRepository extends JpaRepository<MetaDataFile, Long> {
     Optional<MetaDataFile> findByS3Key(String s3Key);
     List<MetaDataFile> findByIsDeletedTrueAndS3DeletedFalseAndDeletedAtBefore(LocalDateTime cutOfDate);
+    Optional<MetaDataFile> findById(Long id);
 
 }

@@ -167,7 +167,7 @@ public class FileService {
     }
 
 
-    private void validateFile(MultipartFile file, FileType fileType) {
+    public void validateFile(MultipartFile file, FileType fileType) {
         if(file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어있습니다.");
         }
@@ -188,7 +188,8 @@ public class FileService {
         String prefix = switch(fileType) {
             case PROFILE_IMAGE -> "pet/profiles/";
             case REGISTRATION_PDF -> "pet/registrations/";
-            case MEDICAL_DOCUMENT -> "pet/medical/";
+            case MEDICAL_DOCUMENT -> "pet/medical-documents/";
+            case MEDICAL_RECEIPT -> "pet/medical-receipts/";
         };
 
         return prefix + storedFileName;

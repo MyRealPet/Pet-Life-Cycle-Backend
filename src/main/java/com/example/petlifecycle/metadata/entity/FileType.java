@@ -17,6 +17,9 @@ public enum FileType {
             20 * 1024 * 1024L),
     MEDICAL_DOCUMENT("의료 문서",
             Arrays.asList("application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"),
+            20 * 1024 * 1024L),
+    MEDICAL_RECEIPT("진료 청구서",
+            Arrays.asList("application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"),
             20 * 1024 * 1024L);
 
     private final String description;
