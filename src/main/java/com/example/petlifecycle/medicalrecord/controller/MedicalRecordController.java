@@ -5,7 +5,9 @@ import com.example.petlifecycle.medicalrecord.controller.request.RegisterMedical
 import com.example.petlifecycle.medicalrecord.controller.request.UpdateMedicalRecordRequest;
 import com.example.petlifecycle.medicalrecord.controller.response.ListMedicalRecordResponse;
 import com.example.petlifecycle.medicalrecord.controller.response.ReadMedicalRecordResponse;
+import com.example.petlifecycle.medicalrecord.controller.response.ReceiptAnalysisResponse;
 import com.example.petlifecycle.medicalrecord.service.MedicalRecordService;
+import com.example.petlifecycle.medicalrecord.service.ReceiptAnalysisService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MedicalRecordController {
 
     private final MedicalRecordService medicalRecordService;
+    private final ReceiptAnalysisService receiptAnalysisService;
 
     @PostMapping
     public ResponseEntity<String> registerMedicalRecord(@PathVariable("petId") Long petId, @RequestBody @Valid RegisterMedicalRecordRequest request) {
@@ -81,3 +84,17 @@ public class MedicalRecordController {
             throw new RuntimeException("진료기록 삭제에 실패하셨습니다.");
         }
     }
+
+    @PostMapping("/analyze-receipt")
+    public ResponseEntity<?> analyzeReceipt(@PathVariable Long petId, @RequestParam("file") MultipartFile file) {
+        Long accountId = 1001L;
+        try {
+            ReceiptAnalysisResponse response = receiptAnalysisService.analyzeReceipt(file);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("청구서 분석 실패: {}", e.getMessage());
+            throw new RuntimeException("청구서 분석에 실패하였습니다.");
+        }
+    }
+}
+
