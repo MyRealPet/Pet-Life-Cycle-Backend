@@ -4,6 +4,7 @@ import com.example.petlifecycle.mission.domain.DailyMission;
 import com.example.petlifecycle.mission.domain.MissionCompletion;
 import com.example.petlifecycle.mission.dto.DailyMissionResponse;
 import com.example.petlifecycle.mission.dto.MissionCompletionResponse;
+import com.example.petlifecycle.mission.dto.MissionStatsResponse;
 import com.example.petlifecycle.mission.repository.MasterDailyMissionRepository;
 import com.example.petlifecycle.mission.repository.MissionCompletionRepository;
 import lombok.RequiredArgsConstructor;
@@ -60,5 +61,10 @@ public class MissionService {
         return missionCompletionRepository.findAllByUserIdAndCompletedDateBetween(userId, startDate, endDate).stream()
                 .map(MissionCompletionResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public MissionStatsResponse getMissionStats(Long userId) {
+        long totalCompletions = missionCompletionRepository.countByUserId(userId);
+        return new MissionStatsResponse(totalCompletions);
     }
 }
