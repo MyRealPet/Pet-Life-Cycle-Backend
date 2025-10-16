@@ -2,6 +2,7 @@ package com.example.petlifecycle.mission.controller;
 
 import com.example.petlifecycle.mission.dto.DailyMissionResponse;
 import com.example.petlifecycle.mission.dto.MissionCompletionResponse;
+import com.example.petlifecycle.mission.dto.MissionStatsResponse;
 import com.example.petlifecycle.mission.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,12 @@ public class MissionController {
     public ResponseEntity<Void> cancelMissionCompletion(@PathVariable Long userId, @PathVariable Long missionId) {
         missionService.cancelMissionCompletion(userId, missionId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 5. 특정 유저의 미션 통계 조회
+    @GetMapping("/users/{userId}/missions/stats")
+    public ResponseEntity<MissionStatsResponse> getMissionStats(@PathVariable Long userId) {
+        MissionStatsResponse stats = missionService.getMissionStats(userId);
+        return ResponseEntity.ok(stats);
     }
 }
